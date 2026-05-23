@@ -8,7 +8,6 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
 
-app.options('*', cors());
 app.use(express.json());
 
 // Printing the route and method server is recieving

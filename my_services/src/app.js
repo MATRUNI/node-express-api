@@ -3,7 +3,12 @@ import express from'express';
 import APIRouter from './routes/APIRoute.js'
 import cors from 'cors'
 const app=express();
-app.use(cors())
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+}));
+
+app.options('*', cors());
 app.use(express.json());
 
 // Printing the route and method server is recieving

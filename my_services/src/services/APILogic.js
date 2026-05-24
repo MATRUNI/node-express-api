@@ -4,38 +4,14 @@ import API from "../models/API.js";
 
 export async function getAPIs(apiInstance) 
 {
-    try 
-    {    
-        const data=await API.find({})
-        return data
-    } 
-    catch (error) 
-    {
-        console.log("Error:",error.message)    
-    }
+    return await API.find({})
 }
 export async function createNewApi(apiInstance) 
 {
-    try 
-    {    
-        const newAPI=await API(apiInstance)
-        const saveAPI= await newAPI.save()
-        console.log(saveAPI)
-        return saveAPI
-    } 
-    catch (error) 
-    {
-        console.log("Error:",error.message)    
-    }
+    const newAPI=new API(apiInstance)
+    return await newAPI.save()
 }
 export async function deleteApiByID(id) 
 {
-    try 
-    {    
-        return await API.findOneAndDelete({_id:new ObjectId(id)})
-    } 
-    catch (error) 
-    {
-        console.log("Error:",error.message)
-    }
+    return await API.findOneAndDelete({_id:new ObjectId(id)})
 }

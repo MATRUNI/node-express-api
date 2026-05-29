@@ -1,7 +1,9 @@
 import express from'express';
 // import router from './routes/productRoutes.js';
+import cookieParser from 'cookie-parser'
 import globalErrorHandlers from './middlewares/errorMiddleWare.js'
 import APIRouter from './routes/APIRoute.js'
+import AuthRoute from './routes/AuthRoute.js'
 import cors from 'cors'
 const app=express();
 app.use(cors({
@@ -10,6 +12,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+// app.use(cookieParser);
 
 // Printing the route and method server is recieving
 app.use((req,res,next)=>{
@@ -22,6 +25,7 @@ app.get('/health',(req,res)=>{
 })
 // app.use('/products',router);
 app.use('/api',APIRouter)
+app.use('/api/auth',AuthRoute)
 
 app.use(globalErrorHandlers)
 export default app;

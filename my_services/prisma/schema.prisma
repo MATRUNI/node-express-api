@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("NEON_DB")
+}
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+
+  isVerified Boolean @default(false)
+
+  lastLogin DateTime?
+
+  createdAt DateTime @default(now())
+}

@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma.js";
+import genAccessToken from "../jobs/genAccessToken.js";
+import genRefreshToken from "../jobs/genRefreshToken.js";
 
 export async function register(req, res) {
   const {username, email, password } = req.body;
@@ -28,6 +30,8 @@ export async function register(req, res) {
         password: hashedPassword
       },
     });
+    genAccessToken({userId:newUser.id}, res)
+    genRefreshToken({userId:newUser.id}, res)
     return res.status(201).json({
       message: "User created successfully",
       user: {

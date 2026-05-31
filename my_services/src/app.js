@@ -4,15 +4,18 @@ import cookieParser from 'cookie-parser'
 import globalErrorHandlers from './middlewares/errorMiddleWare.js'
 import APIRouter from './routes/APIRoute.js'
 import AuthRoute from './routes/AuthRoute.js'
+import UserRoute from './routes/UserRoute.js'
+
 import cors from 'cors'
 const app=express();
 app.use(cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials:true
 }));
 
 app.use(express.json());
-// app.use(cookieParser);
+app.use(cookieParser());
 
 // Printing the route and method server is recieving
 app.use((req,res,next)=>{
@@ -26,6 +29,7 @@ app.get('/health',(req,res)=>{
 // app.use('/products',router);
 app.use('/api',APIRouter)
 app.use('/api/auth',AuthRoute)
+app.use('/api/users',UserRoute)
 
 app.use(globalErrorHandlers)
 export default app;

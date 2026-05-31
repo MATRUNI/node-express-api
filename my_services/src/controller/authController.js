@@ -27,7 +27,7 @@ export async function refreshSession(req, res) {
         res.cookie('access_token', newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 15 * 60 * 1000 // 15 minutes
         });
 
@@ -44,13 +44,13 @@ export async function logoutSession(req, res) {
         res.clearCookie('access_token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: "lax"
+            sameSite: "none"
         });
 
         res.clearCookie('refresh_token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: "lax"
+            sameSite: "none"
         });
 
         return res.status(200).json({ message: "SESSION_TERMINATED: GOODBYE_OPERATOR" });

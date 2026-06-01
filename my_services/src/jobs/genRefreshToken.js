@@ -7,6 +7,7 @@ export default function genRefreshToken(payload,res)
         httpOnly:true,
         secure:process.env.NODE_ENV === 'production',
         sameSite:"none",
+        partitioned: true,
         maxAge: 30*24*60*60*1000
     })
     console.log('Access token dipatched')

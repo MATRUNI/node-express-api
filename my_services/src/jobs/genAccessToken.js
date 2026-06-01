@@ -6,6 +6,7 @@ export default function genAccessToken(payload,res)
                 httpOnly:true,
                 secure:process.env.NODE_ENV === 'production',
                 sameSite:"none",
+                partitioned: true,
                 maxAge: 15*60*1000
         })
         console.log('Access token dipatched')

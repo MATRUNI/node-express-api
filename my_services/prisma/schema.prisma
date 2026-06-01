@@ -15,6 +15,6 @@ model User {
   isVerified Boolean @default(false)
 
   lastLogin DateTime?
-
+  savedAPI  Json?
   createdAt DateTime @default(now())
 }

@@ -27,7 +27,8 @@ export async function register(req, res) {
       data: {
         username,
         email,
-        password: hashedPassword
+        password: hashedPassword,
+        isVerified:true
       },
     });
     genAccessToken({userId:newUser.id}, res)

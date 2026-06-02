@@ -20,6 +20,12 @@ export async function loginUser(req,res)
     {
         return res.status(401).json({ message: "Invalid credentials" });
     }
+    await prisma.user.findUnique({
+        where:{email},
+        data:{
+            lastLogin: new Date()
+        }
+    });
     genAccessToken({userId:user.id}, res)
     genRefreshToken({userId:user.id}, res)
     res.json({message:"Logged in",user:{username:user.username,email:user.email}});

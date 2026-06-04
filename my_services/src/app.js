@@ -9,9 +9,7 @@ import UserRoute from './routes/UserRoute.js'
 import cors from 'cors'
 const app=express();
 app.use(cors({
-    origin: process.env.FRONTEND_URLS
-        ? process.env.FRONTEND_URLS.split(",")
-        : ["http://localhost:5173"],
+    origin: process.env.FRONTEND_URLS||"http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials:true
 }));

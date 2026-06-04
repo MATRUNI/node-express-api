@@ -20,7 +20,7 @@ export async function loginUser(req,res)
     {
         return res.status(401).json({ message: "Invalid credentials" });
     }
-    await prisma.user.findUnique({
+    await prisma.user.update({
         where:{email},
         data:{
             lastLogin: new Date()

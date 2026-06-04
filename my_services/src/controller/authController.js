@@ -10,11 +10,11 @@ export async function refreshSession(req, res) {
         }
 
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY);
-
+        
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId }
         });
-
+        
         if (!user) {
             return res.status(404).json({ message: "User session node untethered" });
         }
@@ -23,12 +23,12 @@ export async function refreshSession(req, res) {
             process.env.SECRET_KEY,
             { expiresIn: "15m" }
         );
-
+        const isProd = process.env.NODE_ENV === "production"
         res.cookie('access_token', newAccessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: "none",
-            maxAge: 15 * 60 * 1000 // 15 minutes
+            secure: isProd,
+            sameSite: isProd?"none":"lax",
+            maxAge: 15 * 60 * 1000 
         });
 
         return res.status(200).json({ message: "SESSION_ACCESS_RENEWED" });
@@ -41,18 +41,19 @@ export async function refreshSession(req, res) {
 
 export async function logoutSession(req, res) {
     try {
+        const isProd = process.env.NODE_ENV === "production"
         res.clearCookie('access_token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: "none"
+            secure: isProd,
+            sameSite: isProd?"none":"lax"
         });
 
         res.clearCookie('refresh_token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: "none"
+            secure: isProd,
+            sameSite: isProd?"none":"lax"
         });
-
+        console.log(`[AUTH LOGOUT] | tokens cleared | ${new Date().toISOString()}`);
         return res.status(200).json({ message: "SESSION_TERMINATED: GOODBYE_OPERATOR" });
     } catch (error) {
         console.error("Logout error:", error);

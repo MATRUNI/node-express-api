@@ -2,10 +2,11 @@ import jwt from 'jsonwebtoken'
 export default function genAccessToken(payload,res)
 {
         const token=jwt.sign(payload, process.env.SECRET_KEY,{expiresIn:"15m"});
+        const isProd = process.env.NODE_ENV === "production"
         res.cookie('access_token',token,{
                 httpOnly:true,
-                secure:process.env.NODE_ENV === 'production',
-                sameSite:"none",
+                secure: isProd,
+                sameSite: isProd?"none":"lax",
                 partitioned: true,
                 maxAge: 15*60*1000
         })

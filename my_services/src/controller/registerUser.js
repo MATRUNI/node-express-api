@@ -2,9 +2,20 @@ import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma.js";
 import genAccessToken from "../jobs/genAccessToken.js";
 import genRefreshToken from "../jobs/genRefreshToken.js";
+import { z } from 'zod';
+
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(30),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+});
 
 export async function register(req, res) {
-  const {username, email, password } = req.body;
+  const validationResult = registerSchema.safeParse(req.body);
+  if (!validationResult.success) {
+    return res.status(400).json({ message: "Validation failed", errors: validationResult.error.errors });
+  }
+  const {username, email, password } = validationResult.data;
 
   try 
   {

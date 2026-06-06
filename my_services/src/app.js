@@ -7,6 +7,10 @@ import AuthRoute from './routes/AuthRoute.js'
 import UserRoute from './routes/UserRoute.js'
 
 import cors from 'cors'
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { requireApiKey } from './middlewares/requireApiKey.js';
+import { blockBots } from './middlewares/blockBots.js';
 const app=express();
 app.use(cors({
     origin: process.env.FRONTEND_URLS||"http://localhost:5173",
@@ -14,7 +18,20 @@ app.use(cors({
     credentials:true
 }));
 
-app.use(express.json());
+app.use(helmet());
+
+// Apply Bot Blocker and API Key requirement early in the stack
+app.use(blockBots);
+app.use(requireApiKey);
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: process.env.NODE_ENV === 'local' ? 10000 : 100, // High limit for local testing
+    message: "Too many requests from this IP, please try again after 15 minutes"
+});
+app.use(apiLimiter);
+
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 // Printing the route and method server is recieving

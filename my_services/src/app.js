@@ -12,6 +12,9 @@ import rateLimit from 'express-rate-limit';
 import { requireApiKey } from './middlewares/requireApiKey.js';
 import { blockBots } from './middlewares/blockBots.js';
 const app=express();
+
+app.set('trust proxy', 1);
+
 app.use(cors({
     origin: process.env.FRONTEND_URLS||"http://localhost:5173",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

@@ -3,7 +3,7 @@ import { register } from '../controller/registerUser.js';
 import { loginUser } from '../controller/loginUser.js';
 import { logoutSession, refreshSession } from '../controller/authController.js';
 import { optController, otpVerify } from '../controller/otpController.js';
-import { verifyHuman } from '../middlewares/verifyHuman.js';
+// import { verifyHuman } from '../middlewares/verifyHuman.js';
 import rateLimit from 'express-rate-limit';
 
 const authLimiter = rateLimit({

@@ -6,6 +6,11 @@ import { optController, otpVerify } from '../controller/otpController.js';
 // import { verifyHuman } from '../middlewares/verifyHuman.js';
 import rateLimit from 'express-rate-limit';
 
+const authRouterLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: process.env.NODE_ENV === 'local' ? 1000 : 20,
+    message: "Too many authentication attempts from this IP, please try again after 1 hour"
+});
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: process.env.NODE_ENV === 'local' ? 1000 : 5, // High limit for local testing
@@ -13,6 +18,7 @@ const authLimiter = rateLimit({
 });
 
 const router=express.Router();
+router.use(authRouterLimiter)
 
 router.post('/register', authLimiter, register)
 router.post('/login', authLimiter, loginUser)

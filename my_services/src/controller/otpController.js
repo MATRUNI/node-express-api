@@ -9,10 +9,12 @@ export async function optController(req,res)
   }
 
   try {
-    const otp = crypto.randomInt(100000, 999999).toString();
-
+    const existing = await OTP.findOne({email});
+    if(existing && existing.createdAt > Date.now()- 5 * 60 * 1000 ) 
+      return res.status(429).json({error: "RATE_LIMIT: PLEASE_WAIT_BEFORE_REQUESTING_NEW_OTP"})
     await OTP.deleteMany({ email });
     
+    const otp = crypto.randomInt(100000, 999999).toString();
     await OTP.create({email,otp})
     let response=await requestOTP({email, otp})
 

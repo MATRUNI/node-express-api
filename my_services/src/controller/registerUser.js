@@ -46,10 +46,7 @@ export async function register(req, res) {
     genRefreshToken({userId:newUser.id}, res)
     return res.status(201).json({
       message: "User created successfully",
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-      },
+      user: {username},
     });
 
   } catch (error) {

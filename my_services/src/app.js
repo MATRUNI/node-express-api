@@ -1,5 +1,4 @@
 import express from'express';
-// import router from './routes/productRoutes.js';
 import cookieParser from 'cookie-parser'
 import globalErrorHandlers from './middlewares/errorMiddleWare.js'
 import APIRouter from './routes/APIRoute.js'
@@ -11,6 +10,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { requireApiKey } from './middlewares/requireApiKey.js';
 import { blockBots } from './middlewares/blockBots.js';
+import runtimeRouter from './routes/runtimeRoute.js';
+
 const app=express();
 
 app.set('trust proxy', 1);
@@ -46,10 +47,12 @@ app.use((req,res,next)=>{
 app.get('/health',(req,res)=>{
     res.json({health:"OK"})
 })
-// app.use('/products',router);
+
 app.use('/api',APIRouter)
 app.use('/api/auth',AuthRoute)
 app.use('/api/users',UserRoute)
+
+app.use('/runtime',runtimeRouter)
 
 app.use(globalErrorHandlers)
 export default app;

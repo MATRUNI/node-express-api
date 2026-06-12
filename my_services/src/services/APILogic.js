@@ -2,9 +2,11 @@ import { ObjectId } from "mongodb";
 import connectDB from "../config/db.js";
 import API from "../models/API.js";
 
-export async function getAPIs(apiInstance) 
+export async function getAPIs(user) 
 {
-    return await API.find({})
+    const isLoggedIn = !!user;
+    const filter = isLoggedIn? {} : {priority: 0};
+    return await API.find(filter).sort({ priority: -1, createdAt: -1 });
 }
 export async function createNewApi(apiInstance) 
 {

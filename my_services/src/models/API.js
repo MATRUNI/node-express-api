@@ -39,6 +39,10 @@ const APISchema= new mongoose.Schema(
             required:true,
             enum:['JSON','XML','HTML','TEXT'],
             default:"JSON"
+        },
+        priority: {
+          type: Number,
+          default: 0
         }
     },
     {

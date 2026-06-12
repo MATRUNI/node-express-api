@@ -1,8 +1,15 @@
 import PRODUCT from "../models/PRODUCTS.js";
 import { makeSKU, makeSlug } from "../utils/genericHelper.js";
+import { getCachedProducts } from "../cache/productsCache.js";
+import { getRandomProduct } from "../utils/getRandomProduct.js";
 
-export const getData = async(filter={})=>{
-    return await PRODUCT.find(filter);
+export const getData = async(limit)=>{
+    
+    const cachedData = await getCachedProducts();
+
+    const randomProducts = getRandomProduct(cachedData,limit);
+
+    return randomProducts;
 }
 export const findOne = async(field,value)=>{
     return await PRODUCT.findOne({[field]: value})

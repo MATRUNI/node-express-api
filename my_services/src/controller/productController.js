@@ -2,7 +2,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { getData, findOne, deleteData, createData } from '../services/ProductLogic.js';
 
 export const getAllProducts = asyncHandler(async (req, res) => {
-    const data = await getData();
+    const data = await getData(10);
     return res.status(200).json(data);
 });
 

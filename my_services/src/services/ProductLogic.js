@@ -2,6 +2,7 @@ import PRODUCT from "../models/PRODUCTS.js";
 import { makeSKU, makeSlug } from "../utils/genericHelper.js";
 import { getCachedProducts } from "../cache/productsCache.js";
 import { getRandomProduct } from "../utils/getRandomProduct.js";
+import { ObjectId } from "mongodb";
 
 export const getData = async(limit)=>{
     
@@ -10,6 +11,22 @@ export const getData = async(limit)=>{
     const randomProducts = getRandomProduct(cachedData,limit);
 
     return randomProducts;
+}
+export const getAllData = async()=>{
+    
+    const cachedData = await getCachedProducts();
+
+    return cachedData.slice(0,100);
+}
+export const getDataByID = async (id)=>
+{
+    return await PRODUCT.findById(id)
+}
+export const getPageData = async(start,end)=>{
+    
+    const cachedData = await getCachedProducts();
+
+    return cachedData.slice(start,end);
 }
 export const findOne = async(field,value)=>{
     return await PRODUCT.findOne({[field]: value})

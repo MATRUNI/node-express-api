@@ -28,8 +28,8 @@ export const getPageData = async(start,end)=>{
 
     return cachedData.slice(start,end);
 }
-export const findOne = async(field,value)=>{
-    return await PRODUCT.findOne({[field]: value})
+export const findAll = async(field,value)=>{
+    return await PRODUCT.find({[field]: value})
 }
 export const createData = async(productData)=>{
     if(!productData.name) 

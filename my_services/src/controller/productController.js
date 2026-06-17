@@ -1,6 +1,6 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { getData, 
-    findOne, 
+    findAll, 
     deleteData, 
     createData, 
     getAllData, 
@@ -61,7 +61,7 @@ export const findSpecific = asyncHandler(async (req, res) => {
 
     type = isNaN(type) ? type : Number(type);
 
-    const data = await findOne(field, type);
+    const data = await findAll(field, type);
 
     if (!data) {
         return res.status(404).json({ error: "Doesn't exist" });

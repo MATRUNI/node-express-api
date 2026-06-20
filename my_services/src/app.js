@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import { requireApiKey } from './middlewares/requireApiKey.js';
 import { blockBots } from './middlewares/blockBots.js';
 import runtimeRouter from './routes/runtimeRoute.js';
+import APIConfig from './routes/APIConfig_Route.js';
 
 const app=express();
 
@@ -52,6 +53,7 @@ app.use('/api',APIRouter)
 app.use('/api/auth',AuthRoute)
 app.use('/api/users',UserRoute)
 
+app.use('/config',APIConfig)
 app.use('/runtime',runtimeRouter)
 
 app.use(globalErrorHandlers)

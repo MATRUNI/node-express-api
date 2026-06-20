@@ -2,6 +2,11 @@ import mongoose from 'mongoose'
 
 const APISchema= new mongoose.Schema(
     {
+        developer:{
+            type:String,
+            maxLength:[30,"Name can't exceed 30 characters"],
+            default: null
+        },
         name:{
             type:String,
             required:[true,"API name is required"],

@@ -16,6 +16,8 @@ model User {
 
   hashedRefreshToken String?  @unique
   
+  stats Json @default("{}")
+
   lastLogin DateTime?
   savedAPI  Json?
   createdAt DateTime @default(now())

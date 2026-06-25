@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma.js";
-import genAccessToken from "../jobs/genAccessToken.js";
-import genRefreshToken from "../jobs/genRefreshToken.js";
+import { genAccessToken, genRefreshToken } from "../utils/tokenUtils.js";
 import { z } from 'zod';
 
 const registerSchema = z.object({

@@ -1,10 +1,9 @@
 import express from 'express'
-import Me from '../secure/Me.js';
+import { getMe, getUserProfile } from '../controller/userController.js';
 import verifyToken from '../middlewares/verifyToken.js' 
-import getUserProfile from '../secure/getUserProfile.js';
 const router=express.Router();
 
-router.get('/me',verifyToken,Me)
+router.get('/me',verifyToken,getMe)
 router.get('/profile',verifyToken,getUserProfile)
 
 export default router

@@ -1,15 +1,24 @@
 import jwt from 'jsonwebtoken'
-
-export default function genRefreshToken(payload,res)
+import { getCookieOptions } from '../utils/cookieOptions.js';
+import prisma from '../lib/prisma.js';
+import crypto from 'crypto';
+export default async function genRefreshToken(payload,res)
 {
     const token=jwt.sign({...payload, type:"user"}, process.env.REFRESH_SECRET_KEY, {expiresIn:'30d'});
     const isProd = process.env.NODE_ENV === "production"
     res.cookie('refresh_token',token,{
-        httpOnly:true,
-        secure: isProd,
-        sameSite: isProd?"none":"lax",
-        partitioned: isProd,
+        ...getCookieOptions(),
         maxAge: 30*24*60*60*1000
     })
-    console.log('Access token dipatched')
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest("hex")
+    await prisma.user.update({
+            where: {
+                id: payload.userId
+            },
+            data:{
+                hashedRefreshToken: hashedToken
+            }
+    })
+    console.log('Refresh token dipatched')
 }

@@ -35,7 +35,8 @@ export async function getUserProfile(req, res) {
                 email: user.email,
                 createdAt: user.createdAt,
                 isVerified: user.isVerified,
-                stats: user.savedAPI
+                savedAPI: user.savedAPI,
+                stats: user.stats
             }
         });
     } catch (error) {

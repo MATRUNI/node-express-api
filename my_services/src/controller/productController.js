@@ -47,6 +47,9 @@ export const getPageProducts = asyncHandler(async (req,res)=>
     const data = await getPageData((number-1)*100,number*100)
 
     return res.status(200).json({
+        page:number,
+        totalPages:5,
+        count:100,
         message: "This data is paged from cache data and will change after sometime!", 
         products:data
     });

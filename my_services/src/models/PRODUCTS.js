@@ -83,6 +83,10 @@ const ProductSchema = new mongoose.Schema(
             type: Date,
             default: null,
             index: {expires: 0}
+        },
+        createdBy:{
+            type: String,
+            required: true
         }
     },
     {

@@ -1,5 +1,4 @@
 import PRODUCT from "../models/PRODUCTS.js";
-import { makeSKU, makeSlug } from "../utils/genericHelper.js";
 import { getCachedProducts } from "../cache/productsCache.js";
 import { getRandomProduct } from "../utils/getRandomProduct.js";
 import { ObjectId } from "mongodb";
@@ -36,17 +35,15 @@ export const createData = async(productData)=>{
     {
         throw new Error("Product Name missing")
     }
-    const slug = makeSlug(productData.name);
-    const sku = makeSKU();
-    return await PRODUCT.create({...productData,sku,slug});
+    return await PRODUCT.create({...productData});
 }
 
-export const deleteData = async(field,value,multiple=false)=>{  // field->kay, value->value
-    if(multiple)
+export const deleteData = async(filter,deleteOne=true)=>{  // field->kay, value->value
+    if(deleteOne)
     {
-        return await PRODUCT.deleteMany({[field]: value})
+        return await PRODUCT.deleteOne(filter);
     }
-    return await PRODUCT.deleteOne({[field]: value});
+    return await PRODUCT.deleteMany(filter)
 }
 
 export const updateData = async(filter, updateFields)=>{

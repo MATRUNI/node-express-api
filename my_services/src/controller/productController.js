@@ -6,6 +6,7 @@ import { getData,
     getAllData, 
     getPageData, 
     getDataByID } from '../services/ProductLogic.js';
+import { ObjectId } from 'mongodb';
 
 
 export const getAllProducts = asyncHandler(async (req, res) => {
@@ -74,18 +75,21 @@ export const findSpecific = asyncHandler(async (req, res) => {
 });
 
 export const createProduct = asyncHandler(async (req, res) => {
-    const data = await createData(req.body);
+    const data = await createData(req.verifiedProduct);
     return res.status(201).json(data);
 });
 
 export const deleteProduct = asyncHandler(async (req, res) => {
-    let { field, type, isOne } = req.params;
-
+    let { field, type, deleteOne } = req.params;
+    if (field === "_id") {
+        type = new ObjectId(type);
+    }
+    else
     type = isNaN(type) ? type : Number(type);
 
-    isOne = (isOne === 'true' || isOne === undefined);
+    let isSingleDelete = (deleteOne === 'true' || deleteOne === undefined);
 
-    const data = await deleteData(field, type, isOne);
+    const data = await deleteData({[field]:type,createdBy:req.user.userId}, isSingleDelete);
 
     return res.status(200).json(data);
 });

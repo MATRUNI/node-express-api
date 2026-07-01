@@ -23,6 +23,6 @@ productRouter.get('/:field/:type',findSpecific); // /key/value -> price/300);
 
 productRouter.post('/', validateProductCreate, createProduct);
 
-productRouter.delete('/:field/:type/:isOne', deleteProduct);
+productRouter.delete('/:field/:type/:deleteOne', deleteProduct);
 
 export default productRouter;

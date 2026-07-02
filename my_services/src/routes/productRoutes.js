@@ -1,5 +1,5 @@
 import express from 'express'
-import { validateProductCreate } from '../middlewares/validateProductCreate.js';
+import { validateProductCreate, validateProductPatch } from '../middlewares/validateProductCreate.js';
 import { createProduct, 
     deleteProduct, 
     findSpecific, 
@@ -7,7 +7,8 @@ import { createProduct,
     getPageProducts, 
     getProductByID, 
     getTenRandomProducts, 
-    getXRandomProducts } from '../controller/productController.js';
+    getXRandomProducts, 
+    patchData} from '../controller/productController.js';
     
 let productRouter=express.Router();
 
@@ -23,6 +24,7 @@ productRouter.get('/:field/:type',findSpecific); // /key/value -> price/300);
 
 productRouter.post('/', validateProductCreate, createProduct);
 
+productRouter.patch('/:id',validateProductPatch, patchData);
 productRouter.delete('/:field/:type/:deleteOne', deleteProduct);
 
 export default productRouter;

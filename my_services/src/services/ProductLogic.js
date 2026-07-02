@@ -47,5 +47,12 @@ export const deleteData = async(filter,deleteOne=true)=>{  // field->kay, value-
 }
 
 export const updateData = async(filter, updateFields)=>{
-    return await PRODUCT.updateOne(filter, {$set: updateFields})
+        return await PRODUCT.findOneAndUpdate(
+        filter,
+        { $set: updateFields },
+        {
+            returnDocument: "after",
+            runValidators:true 
+        }
+    );
 }

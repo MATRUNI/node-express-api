@@ -5,7 +5,8 @@ import { getData,
     createData, 
     getAllData, 
     getPageData, 
-    getDataByID } from '../services/ProductLogic.js';
+    getDataByID,
+    updateData } from '../services/ProductLogic.js';
 import { ObjectId } from 'mongodb';
 
 
@@ -76,12 +77,12 @@ export const findSpecific = asyncHandler(async (req, res) => {
 
 export const createProduct = asyncHandler(async (req, res) => {
     const data = await createData(req.verifiedProduct);
-    return res.status(201).json(data);
+    return res.status(201).json({message:"Date created successfully.",data});
 });
 
 export const deleteProduct = asyncHandler(async (req, res) => {
     let { field, type, deleteOne } = req.params;
-    if (field === "_id") {
+    if (field === "id") {
         type = new ObjectId(type);
     }
     else
@@ -91,5 +92,28 @@ export const deleteProduct = asyncHandler(async (req, res) => {
 
     const data = await deleteData({[field]:type,createdBy:req.user.userId}, isSingleDelete);
 
-    return res.status(200).json(data);
+    return res.status(200).json({data});
+});
+
+export const patchData = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const update  = req.verifiedProduct;
+    const data = await updateData(
+        { 
+            _id: id,
+            createdBy: req.user.userId
+        },
+        update
+    );
+
+    if (!data) {
+        return res.status(404).json({
+            message: "Product not found or unauthorized access."
+        });
+    }
+
+    return res.status(200).json({
+        message: "Product updated successfully.",
+        data,
+    });
 });

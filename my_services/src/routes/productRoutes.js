@@ -1,30 +1,34 @@
-import express from 'express'
-import { validateProductCreate, validateProductPatch } from '../middlewares/validateProductCreate.js';
-import { createProduct, 
-    deleteProduct, 
-    findSpecific, 
-    getAllProducts, 
-    getPageProducts, 
-    getProductByID, 
-    getTenRandomProducts, 
-    getXRandomProducts, 
-    patchData} from '../controller/productController.js';
-    
-let productRouter=express.Router();
+import express from 'express';
 
-productRouter.get('/',getAllProducts);
-productRouter.get('/id/:id',getProductByID)
-productRouter.get('/page/:number',getPageProducts);
+import {
+  validateProductCreate,
+  validateProductPatch
+} from '../middlewares/validateProductCreate.js';
 
-productRouter.get('/random',getTenRandomProducts);
+import {
+  createProduct,
+  deleteProduct,
+  getAllProducts,
+  getProductByID,
+  getRandomProducts,
+  patchData
+} from '../controller/productController.js';
 
-productRouter.get('/random/:limit',getXRandomProducts);
+const productRouter = express.Router();
 
-productRouter.get('/:field/:type',findSpecific); // /key/value -> price/300);
+
+productRouter.get('/', getAllProducts);
+productRouter.get('/random/:limit', getRandomProducts);
+
+
+productRouter.get('/random', getRandomProducts);
+
+productRouter.get('/:id', getProductByID);
 
 productRouter.post('/', validateProductCreate, createProduct);
 
-productRouter.patch('/:id',validateProductPatch, patchData);
-productRouter.delete('/:field/:type/:deleteOne', deleteProduct);
+productRouter.patch('/:id', validateProductPatch, patchData);
+
+productRouter.delete('/:id', deleteProduct);
 
 export default productRouter;

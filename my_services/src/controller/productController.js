@@ -1,36 +1,61 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { getData, 
-    findAll, 
     deleteData, 
-    createData, 
-    getAllData, 
-    getPageData, 
+    createData,
     getDataByID,
     updateData } from '../services/ProductLogic.js';
 import { ObjectId } from 'mongodb';
 
+const allowedSortFields = new Set([
+    "price",
+    "name",
+    "createdAt",
+    "updatedAt"
+]);
 
 export const getAllProducts = asyncHandler(async (req, res) => {
-    const data = await getAllData();
+    const {
+        page = 1,
+        limit = 100,
+        random = false,
+        sort,
+        order = "asc",
+        ...filters
+    } = req.query;
+
+    if (sort && !allowedSortFields.has(sort)) {
+        return res.status(400).json({message:`Sorting by "${sort}" is not supported.`})
+    }
+    const data = await getData({
+        page: Number(page)||1,
+        limit: Number(limit)||10,
+        random: random === "true",
+        sort,
+        order,
+        filters
+    });
     return res.status(200).json(data);
 });
-export const getXRandomProducts = asyncHandler(async (req, res) => {
-    let {limit} = req.params
+export const getRandomProducts = asyncHandler(async (req, res) => {
+    let limit = Number(req.params.limit)
 
-    limit = parseInt(limit,10);
-
-    if(limit>0 && limit<=100)
-    {
-        const data = await getData(limit);
-        return res.status(200).json(data);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
+        return res.status(400).json({
+            message: "Limit must be between 1 and 100."
+        });
     }
 
-    return res.status(400).json({message: "Limit must be between 1 and 100"})
+    const data = await getData({page:1,limit,random:true,sort:false,order:"asc",filters:{}});
+    return res.status(200).json(data);
 });
 
 export const getProductByID = asyncHandler(async (req, res)=>
 {
     const {id} = req.params
+    if(!ObjectId.isValid(id))
+    {
+        return res.status(400).json({message:"Invalid product ID."})
+    }
     const data =  await getDataByID(id);
     if (!data) {
         return res.status(404).json({ message: "Product not found" });
@@ -38,70 +63,35 @@ export const getProductByID = asyncHandler(async (req, res)=>
     return res.status(200).json(data);
 })
 
-export const getPageProducts = asyncHandler(async (req,res)=>
-{
-    let {number} = req.params
-    number = parseInt(number, 10);
-
-    if(number<1 || number > 5)
-        return res.status(400).json({message: "Page number must be between 1 and 5"})
-
-    const data = await getPageData((number-1)*100,number*100)
-
-    return res.status(200).json({
-        page:number,
-        totalPages:5,
-        count:100,
-        message: "This data is paged from cache data and will change after sometime!", 
-        products:data
-    });
-})
-export const getTenRandomProducts = asyncHandler(async (req, res) => {
-    const data = await getData(10);
-    return res.status(200).json(data);
-});
-
-export const findSpecific = asyncHandler(async (req, res) => {
-    let { field, type } = req.params;
-
-    type = isNaN(type) ? type : Number(type);
-
-    const data = await findAll(field, type);
-
-    if (!data) {
-        return res.status(404).json({ error: "Doesn't exist" });
-    }
-
-    return res.status(200).json(data);
-});
 
 export const createProduct = asyncHandler(async (req, res) => {
     const data = await createData(req.verifiedProduct);
-    return res.status(201).json({message:"Date created successfully.",data});
+    return res.status(201).json({message:"Product created successfully.",data});
 });
 
 export const deleteProduct = asyncHandler(async (req, res) => {
-    let { field, type, deleteOne } = req.params;
-    if (field === "id") {
-        type = new ObjectId(type);
+    let { id } = req.params;
+    if(!ObjectId.isValid(id))
+    {
+        return res.status(400).json({message:"Invalid product ID."})
     }
-    else
-    type = isNaN(type) ? type : Number(type);
-
-    let isSingleDelete = (deleteOne === 'true' || deleteOne === undefined);
-
-    const data = await deleteData({[field]:type,createdBy:req.user.userId}, isSingleDelete);
-
-    return res.status(200).json({data});
+    const data = await deleteData({_id: id,owner: req.user.userId})
+    if(!data)
+    {
+        return res.status(404).json({message:"Product not found."})
+    }
+    return res.status(200).json({message:"Product deleted successfully.",data});
 });
 
 export const patchData = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    if(!ObjectId.isValid(id))
+        return res.status(400).json({message:"Invalid product ID."})
     const update  = req.verifiedProduct;
     const data = await updateData(
         { 
             _id: id,
-            createdBy: req.user.userId
+            owner: req.user.userId
         },
         update
     );

@@ -1,53 +1,67 @@
 import PRODUCT from "../models/PRODUCTS.js";
 import { getCachedProducts } from "../cache/productsCache.js";
 import { getRandomProduct } from "../utils/getRandomProduct.js";
-import { ObjectId } from "mongodb";
+import SandboxProduct from "../models/sandBox/Products.js";
 
-export const getData = async(limit)=>{
-    
+export const getData = async({
+        page,
+        limit,
+        random,
+        filters={},
+        sort,
+        order
+    })=>{
+    limit = Math.min(limit, 100);
     const cachedData = await getCachedProducts();
+    let data = [...cachedData]
 
-    const randomProducts = getRandomProduct(cachedData,limit);
+    for(const key in filters)
+    {
+        data = data.filter(item=> String(item[key])===String(filters[key]))
+    }
 
-    return randomProducts;
+    if(sort)
+    {
+        data.sort((a,b)=>{
+        if (a[sort] === b[sort]) return 0;
+
+        return order === "desc"
+            ? (a[sort] < b[sort] ? 1 : -1)
+            : (a[sort] > b[sort] ? 1 : -1);
+            
+        })
+    }
+
+    if(random)
+    {
+        return getRandomProduct(data,limit);
+    }
+   
+    page = Number(page) || 1;
+    const start = (page-1)*limit;
+    const end = start + limit;
+
+    return data.slice(start,end);
 }
-export const getAllData = async()=>{
-    
-    const cachedData = await getCachedProducts();
 
-    return cachedData.slice(0,100);
-}
 export const getDataByID = async (id)=>
 {
-    return await PRODUCT.findById(id)
+    let product = await SandboxProduct.findById(id);
+    if(!product)
+        product = await PRODUCT.findById(id)
+    return product
 }
-export const getPageData = async(start,end)=>{
-    
-    const cachedData = await getCachedProducts();
 
-    return cachedData.slice(start,end);
-}
-export const findAll = async(field,value)=>{
-    return await PRODUCT.find({[field]: value})
-}
 export const createData = async(productData)=>{
-    if(!productData.name) 
-    {
-        throw new Error("Product Name missing")
-    }
-    return await PRODUCT.create({...productData});
+    return SandboxProduct.create(productData);
 }
 
-export const deleteData = async(filter,deleteOne=true)=>{  // field->kay, value->value
-    if(deleteOne)
-    {
-        return await PRODUCT.deleteOne(filter);
-    }
-    return await PRODUCT.deleteMany(filter)
+export const deleteData = async(filter)=>{  // field->kay, value->value
+    return await SandboxProduct.findOneAndDelete(filter);
 }
 
 export const updateData = async(filter, updateFields)=>{
-        return await PRODUCT.findOneAndUpdate(
+        return SandboxProduct.findOneAndUpdate(
         filter,
         { $set: updateFields },
         {

@@ -1,7 +1,7 @@
-import PRODUCT from '../models/PRODUCTS.js';
 import whitelist from '../utils/ProductWhiteList.js';
 import { productFields } from '../utils/AllowedProductFields.js';
 import { makeSKU,makeSlug } from '../utils/genericHelper.js';
+import SandboxProduct from '../models/sandBox/Products.js';
 
 export const validateProductCreate = async (req, res, next) => {
     try {
@@ -11,11 +11,11 @@ export const validateProductCreate = async (req, res, next) => {
             ...sanitizedData,
             slug: makeSlug(req.body.name),
             sku: makeSKU(),
-            expireAt: new Date(Date.now() + 5 * 60 * 1000),
-            createdBy: req.user.userId
+            expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+            owner: req.user.userId
         };
 
-        const productInstance = new PRODUCT(data);
+        const productInstance = new SandboxProduct(data);
         
         await productInstance.validate();
         req.verifiedProduct = data

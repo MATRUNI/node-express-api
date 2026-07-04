@@ -1,13 +1,27 @@
 import PRODUCT from "../models/PRODUCTS.js";
 let cache=[]
-let lastCachedAt=null;
+let lastCachedAt=Date.now();
+let isRefreshing = false
 export async function getCachedProducts() 
 {
     let now = Date.now();
-    if(cache.length===0 || now - lastCachedAt >= 1000 * 60 * 10)
+    const isExpired = now - lastCachedAt >= 10*60*1000;
+    if(cache.length===0 || isExpired)
     {
-        cache = await PRODUCT.aggregate([{$sample: {size: 500}}])
-        lastCachedAt = Date.now();
+        if(!isRefreshing)
+        {
+            isRefreshing = true;
+            try 
+            {
+                cache = await PRODUCT.find().lean();
+                lastCachedAt = now;
+            } 
+            catch (error) 
+            {
+                console.log("Cache refresh failed:", error)
+            }
+            isRefreshing = false
+        }
     }
     return cache
 }

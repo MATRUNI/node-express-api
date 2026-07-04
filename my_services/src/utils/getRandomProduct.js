@@ -8,5 +8,5 @@ export function getRandomProduct(arr,count)
         let j = Math.floor(Math.random()*(i+1));
         [copy[i], copy[j]] = [copy[j], copy[i]]
     }
-    return copy.slice(0,count);
+    return copy.slice(0,Math.min(count,copy.length));
 }

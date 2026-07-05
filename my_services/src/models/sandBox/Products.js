@@ -35,11 +35,20 @@ const sandboxProductSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
-
     metadata: {
       type: mongoose.Schema.Types.Mixed,
       default: {},
-      required: false
+      validate: {
+        validator(value) {
+          if(value === undefined) return true;
+          try {
+            return Buffer.byteLength(JSON.stringify(value), "utf8") <= 2048;
+          } catch {
+            return false;
+          }
+        },
+        message: "Metadata cannot exceed 2KB."
+      }
     },
     expiresAt: {
       type: Date,

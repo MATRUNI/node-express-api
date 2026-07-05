@@ -41,8 +41,8 @@ export async function register(req, res) {
         isVerified:true
       },
     });
-    genAccessToken({userId:newUser.id}, res)
-    await genRefreshToken({userId:newUser.id}, res)
+    genAccessToken({userId:newUser.id,username:newUser.username}, res)
+    await genRefreshToken({userId:newUser.id,username:newUser.username}, res)
     return res.status(201).json({
       message: "User created successfully",
       user: {username},

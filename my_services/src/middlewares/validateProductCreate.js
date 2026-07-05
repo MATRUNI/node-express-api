@@ -12,8 +12,9 @@ export const validateProductCreate = async (req, res, next) => {
             slug: makeSlug(req.body.name),
             sku: makeSKU(),
             expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-            owner: req.user.userId
+            owner: req.user.username
         };
+        console.log(req.user)
 
         const productInstance = new SandboxProduct(data);
         

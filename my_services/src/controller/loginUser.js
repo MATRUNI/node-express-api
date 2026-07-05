@@ -36,7 +36,7 @@ export async function loginUser(req,res)
             lastLogin: new Date()
         }
     });
-    genAccessToken({userId:user.id}, res)
-    await genRefreshToken({userId:user.id}, res)
+    genAccessToken({userId:user.id,username:user.username}, res)
+    await genRefreshToken({userId:user.id,username:user.username}, res)
     res.json({message:"Logged in",user:{username:user.username}});
 }

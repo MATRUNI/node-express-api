@@ -1,31 +1,21 @@
 export const productFields = {
   create: [
     "name",
-    "category",
-    "subCategory",
     "description",
-    "brand",
     "price",
-    "discountPrice",
-    "stock",
-    "images",
-    "attributes",
-    "tags",
-    "status"
+    "category",
+    "inStock",
+    "metadata",
+    "isPublic"
   ],
 
   update: [
     "name",
-    "category",
-    "subCategory",
     "description",
-    "brand",
     "price",
-    "discountPrice",
-    "stock",
-    "images",
-    "attributes",
-    "tags",
-    "status"
+    "category",
+    "inStock",
+    "metadata",
+    "isPublic"
   ]
 };

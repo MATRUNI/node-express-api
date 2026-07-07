@@ -3,7 +3,8 @@ import { getData,
     deleteData, 
     createData,
     getDataByID,
-    updateData } from '../services/ProductLogic.js';
+    updateData, 
+    byUserName} from '../services/ProductLogic.js';
 import { ObjectId } from 'mongodb';
 
 const allowedSortFields = new Set([
@@ -107,3 +108,17 @@ export const patchData = asyncHandler(async (req, res) => {
         data,
     });
 });
+
+export const getProductByUsername = asyncHandler(async(req,res)=>{
+    const {username} = req.params
+    if(username.toUpperCase() === "MATRUNI" )
+    {
+        return res.status(200).json({message:"Full access available. Fetch all products using the GET endpoint."});
+    }
+    const data = await byUserName(username);
+    if(!data)
+    {
+        return res.status(404).json({message:"No product found."})
+    }
+    return res.status(200).json(data)
+})

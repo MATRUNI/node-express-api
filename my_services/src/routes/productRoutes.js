@@ -10,6 +10,7 @@ import {
   deleteProduct,
   getAllProducts,
   getProductByID,
+  getProductByUsername,
   getRandomProducts,
   patchData
 } from '../controller/productController.js';
@@ -20,6 +21,7 @@ const productRouter = express.Router();
 productRouter.get('/', getAllProducts);
 productRouter.get('/random/:limit', getRandomProducts);
 
+productRouter.get('/sandbox/:username', getProductByUsername);
 
 productRouter.get('/random', getRandomProducts);
 

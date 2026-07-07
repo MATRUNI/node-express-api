@@ -70,3 +70,6 @@ export const updateData = async(filter, updateFields)=>{
         }
     );
 }
+export const byUserName = async(username)=>{
+    return await SandboxProduct.find({owner:username})
+}

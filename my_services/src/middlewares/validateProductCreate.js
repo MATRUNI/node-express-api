@@ -14,7 +14,6 @@ export const validateProductCreate = async (req, res, next) => {
             expiresAt: new Date(Date.now() + 5 * 60 * 1000),
             owner: req.user.username
         };
-        console.log(req.user)
 
         const productInstance = new SandboxProduct(data);
         

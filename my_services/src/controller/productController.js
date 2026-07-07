@@ -75,7 +75,7 @@ export const deleteProduct = asyncHandler(async (req, res) => {
     {
         return res.status(400).json({message:"Invalid product ID."})
     }
-    const data = await deleteData({_id: id,owner: req.user.userId})
+    const data = await deleteData({_id: id,owner: req.user.username})
     if(!data)
     {
         return res.status(404).json({message:"Product not found."})

@@ -92,7 +92,7 @@ export const patchData = asyncHandler(async (req, res) => {
     const data = await updateData(
         { 
             _id: id,
-            owner: req.user.userId
+            owner: req.user.username
         },
         update
     );

@@ -57,7 +57,7 @@ export const getProductByID = asyncHandler(async (req, res)=>
     {
         return res.status(400).json({message:"Invalid product ID."})
     }
-    const data =  await getDataByID(id);
+    const data =  await getDataByID(id,req.user.username);
     if (!data) {
         return res.status(404).json({ message: "Product not found" });
     }
@@ -116,7 +116,7 @@ export const getProductByUsername = asyncHandler(async(req,res)=>{
         return res.status(200).json({message:"Full access available. Fetch all products using the GET endpoint."});
     }
     const data = await byUserName(username);
-    if(!data)
+    if(!data || data.length === 0)
     {
         return res.status(404).json({message:"No product found."})
     }

@@ -44,9 +44,9 @@ export const getData = async({
     return data.slice(start,end);
 }
 
-export const getDataByID = async (id)=>
+export const getDataByID = async (id,username)=>
 {
-    let product = await SandboxProduct.findById(id);
+    let product = await SandboxProduct.findOne({_id:id,owner:username});
     if(!product)
         product = await PRODUCT.findById(id)
     return product

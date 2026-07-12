@@ -1,39 +1,49 @@
-import crypto from 'crypto'
-import { requestOTP } from '../utils/requestOTP.js';
 import OTP from '../models/OTP.js';
-export async function optController(req,res)
+import prisma from '../lib/prisma.js';
+import { SendOTP } from '../services/AuthLogic.js';
+import { genSignUpSessionToken } from '../utils/tokenUtils.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+
+export const optController = asyncHandler(async (req,res)=>
 {
-  const { email } = req.body;
+  const { email, username } = req.body;
   if (!email) {
     return res.status(400).json({ error: "PROTOCOL_ERROR: EMAIL_NULL" });
   }
-
-  try {
-    const existing = await OTP.findOne({email});
-    if(existing && existing.createdAt > Date.now()- 5 * 60 * 1000 ) 
-      return res.status(429).json({error: "RATE_LIMIT: PLEASE_WAIT_BEFORE_REQUESTING_NEW_OTP"})
-    await OTP.deleteMany({ email });
-    
-    const otp = crypto.randomInt(100000, 999999).toString();
-    await OTP.create({email,otp})
-    let response=await requestOTP({email, otp})
-
-    if(response.success)
-    {
-      return res.status(200).json({ success: true, message: "CHALLENGE_TOKEN_DESPATCHED" });
-    }
-    else
-      throw new Error("SMTP dispatch failed")
-  } catch (error) {
-    return res.status(500).json({ error: "DISPATCH_FAILED: SMTP_GATEWAY_FAULT" });
+  if (!username) {
+    return res.status(400).json({ error: "PROTOCOL_ERROR: USERNAME_NULL" });
   }
-}
+  const {hasUsername,hasEmail} = await Promise.all([
+    await prisma.user.findUnique({where:{username}}),
+    await prisma.user.findUnique({where:{email}})
+  ])
+  if(hasUsername)
+  {
+      return res.status(409).json({ error: "CONFLICT: USERNAME_ALREADY_EXISTS" })
+  }
+  if(hasEmail)
+  {
+      return res.status(409).json({ error: "CONFLICT: EMAIL_ALREADY_EXISTS" })
+  }
+  const existing = await OTP.findOne({email});
+  if(existing && existing.createdAt > Date.now()- 5 * 60 * 1000 ) 
+    return res.status(429).json({error: "RATE_LIMIT: PLEASE_WAIT_BEFORE_REQUESTING_NEW_OTP"})
 
-export async function otpVerify(req,res) 
+  await OTP.deleteMany({ email });
+  const response = await SendOTP({ email });
+
+  genSignUpSessionToken({ email, username,isVerified:false }, res);
+
+  return res.status(200).json({
+    message: response.message,
+  });
+})
+
+export const otpVerify = asyncHandler(async (req,res)=> 
 {
-  const { email, otp } = req.body;
-
-  if (!email || !otp) {
+  const { otp } = req.body;
+  const {email,username} = req.user
+  if (!otp) {
     return res.status(400).json({ error: "VALIDATION_ERROR: PARAMS_MISSING" });
   }
 
@@ -46,8 +56,9 @@ export async function otpVerify(req,res)
 
   if (record.otp !== String(otp)) 
   {
-    return res.status(401).json({ error: "ACCESS_DENIED: TOKEN_MATCH_FAILED" });
+    return res.status(400).json({ error: "ACCESS_DENIED: TOKEN_MATCH_FAILED" });
   }
   await OTP.deleteOne({ _id: record._id });
-  return res.status(200).json({ success: true, message: "IDENTITY_VERIFIED" });
-}
+  genSignUpSessionToken({ email, username,isVerified:true }, res);
+  return res.status(200).json({ message: "IDENTITY_VERIFIED" });
+})

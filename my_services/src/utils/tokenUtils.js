@@ -3,6 +3,14 @@ import { getCookieOptions } from './cookieOptions.js';
 import prisma from '../lib/prisma.js';
 import crypto from 'crypto';
 
+export function genSignUpSessionToken(payload, res) {
+    const token = jwt.sign({ ...payload }, process.env.SECRET_KEY, { expiresIn: "5m" });
+    res.cookie('session_token', token, {
+        ...getCookieOptions(),
+        maxAge: 5 * 60 * 1000
+    });
+    console.log('Sign Up Session Token dispatched');
+}
 export function genAccessToken(payload, res) {
     const token = jwt.sign({ ...payload, type: "user" }, process.env.SECRET_KEY, { expiresIn: "15m" });
     res.cookie('access_token', token, {

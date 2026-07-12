@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
-import prisma from "../lib/prisma.js";
 import { genAccessToken, genRefreshToken } from "../utils/tokenUtils.js";
 import { z } from 'zod';
+import { getCookieOptions } from "../utils/cookieOptions.js";
+import { createUser } from "../services/AuthLogic.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const registerSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(30),
@@ -9,50 +11,36 @@ const registerSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters")
 });
 
-export async function register(req, res) {
-  const validationResult = registerSchema.safeParse(req.body);
+export const register = asyncHandler(async (req, res) => {
+  const {password } = req.body;
+  const {username, email} = req.user;
+  const validationResult = registerSchema.safeParse({email,username,password});
   if (!validationResult.success) {
-    return res.status(400).json({ message: "Validation failed", errors: validationResult.error.errors });
+    return res.status(400).json({ error: "VALIDATION_ERROR: PAYLOAD_INVALID", details: validationResult.error.issues });
   }
-  const {username, email, password } = validationResult.data;
 
   try 
   {
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (user) {
-      return res.status(409).json({ message: "User already exists" });
-    }
-    const nameUser = await prisma.user.findUnique({
-      where: { username }
-    });
-
-    if (nameUser) {
-      return res.status(409).json({ message: "Username already exists" });
-    }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await prisma.user.create({
-      data: {
+    const newUser = await createUser({
         username,
         email,
         password: hashedPassword,
         isVerified:true
-      },
-    });
+      })
+    res.clearCookie("session_token", getCookieOptions());
     genAccessToken({userId:newUser.id,username:newUser.username}, res)
     await genRefreshToken({userId:newUser.id,username:newUser.username}, res)
     return res.status(201).json({
-      message: "User created successfully",
+      message: "USER_REGISTERED_SUCCESSFULLY",
       user: {username},
     });
 
   } catch (error) {
     console.log(error)
     return res.status(500).json({
-      message: "Server error in register",
-      error:error.message
+      error: "SERVER_ERROR: REGISTRATION_FAILED",
+      details: error.message
     });
   }
-}
+})

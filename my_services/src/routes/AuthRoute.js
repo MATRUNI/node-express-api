@@ -26,5 +26,5 @@ router.post('/login', authLimiter, loginUser)
 router.post('/refresh',refreshSession)
 router.post('/logout', logoutSession)
 router.post('/send-otp', authLimiter, optController)
-router.post('/verify-otp', authLimiter,verifySessionToken, otpVerify)
+router.post('/verify-otp', authLimiter, verifySessionToken(), otpVerify)
 export default router

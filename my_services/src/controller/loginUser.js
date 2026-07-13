@@ -12,7 +12,7 @@ export async function loginUser(req,res)
 {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
-        return res.status(400).json({ message: "Validation failed", errors: validationResult.error.errors });
+        return res.status(400).json({ error: "VALIDATION_ERROR: PAYLOAD_INVALID", details: validationResult.error.issues });
     }
     const {email,password} = validationResult.data;
 
@@ -21,14 +21,14 @@ export async function loginUser(req,res)
     });
     if(!user)
     {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ error: "AUTH_ERROR: INVALID_CREDENTIALS" });
     }
 
     const verifyPassword= await bcrypt.compare(password, user.password);
 
     if(!verifyPassword)
     {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ error: "AUTH_ERROR: INVALID_CREDENTIALS" });
     }
     await prisma.user.update({
         where:{email},
@@ -38,5 +38,5 @@ export async function loginUser(req,res)
     });
     genAccessToken({userId:user.id,username:user.username}, res)
     await genRefreshToken({userId:user.id,username:user.username}, res)
-    res.json({message:"Logged in",user:{username:user.username}});
+    res.json({ message: "LOGIN_SUCCESSFUL", user: { username: user.username } });
 }

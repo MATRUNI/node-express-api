@@ -38,7 +38,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     return res.status(200).json(data);
 });
 export const getRandomProducts = asyncHandler(async (req, res) => {
-    let limit = Number(req.params.limit)
+    let limit = Number(req.params.limit ?? 10) 
 
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) {
         return res.status(400).json({

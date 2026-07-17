@@ -15,6 +15,10 @@ export default function socketAuth(socket, next)
     } 
     catch (error) 
     {
-        next(new Error("Invalid token"))
+        if (error.name === "TokenExpiredError") {
+            return next(new Error("ACCESS_TOKEN_EXPIRED"));
+        }
+
+        return next(new Error("INVALID_TOKEN"));
     }
 }

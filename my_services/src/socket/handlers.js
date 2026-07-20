@@ -10,9 +10,21 @@ export default function registerSocketHandler(io)
         sendOnlineCount(io)
 
         socket.on("chat:send",(data)=>{
-            console.log(data);
             socket.broadcast.emit("chat:receive",data)
         })
+        socket.on("offer",(data)=>{
+            socket.broadcast.emit("offer",data)
+        })
+        socket.on("answer",(answer)=>{
+            socket.broadcast.emit("answer",answer)
+        })
+        socket.on("ice",(candidate)=>{
+            socket.broadcast.emit("ice",candidate)
+        })
+        socket.on("call:end",()=>{
+            socket.broadcast.emit("call:end")
+        })
+
         socket.on("disconnect",()=>{
             sendOnlineCount(io)
         })

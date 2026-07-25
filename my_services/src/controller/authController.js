@@ -21,7 +21,7 @@ export async function refreshSession(req, res) {
             return res.status(403).json({ message: "User session node untethered" });
         }
         const newAccessToken = jwt.sign(
-            { userId: user.id }, 
+            { userId: user.id, username:user.username }, 
             process.env.SECRET_KEY,
             { expiresIn: "15m" }
         );

@@ -9,7 +9,7 @@ export default function registerSocketHandler(io)
         socket.join(`user:${username}`);
 
         // updating UI with latest people only
-        sendOnlineCount(io)
+        broadcastPresence(io)
 
         // listens to chat:send from users and broadCast to others
         socket.on("chat:send",(data)=>{
@@ -61,9 +61,7 @@ export default function registerSocketHandler(io)
                 participants:[...call.participants]
             })
         })
-        socket.on("users:online:get", () => {
-            io.emit("users:online", getOnlineUsers(io));
-        });
+
         // making offer
         socket.on("offer",({to,offer})=>{
             socket.to(`user:${to}`).emit("offer",{from:username,offer})
@@ -143,13 +141,18 @@ export default function registerSocketHandler(io)
                 ]
             });
         });
+        socket.on("disconnect",()=>{
+            broadcastPresence(io);
+        })
     })
 }
 function getOnlineUsers(io) {
     return [...io.sockets.adapter.rooms.keys()]
         .filter(room => room.startsWith("user:")).map(room => room.substring(5));;
 }
-function sendOnlineCount(io) {
-    const onlineUsers = getOnlineUsers(io);
-    io.emit("members", onlineUsers.length);
+function broadcastPresence(io) {
+    const users = getOnlineUsers(io);
+
+    io.emit("users:online", users);
+    io.emit("members", users.length);
 }

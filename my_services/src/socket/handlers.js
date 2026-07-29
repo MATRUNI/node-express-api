@@ -41,6 +41,10 @@ export default function registerSocketHandler(io)
                 from:username,
                 callId
             })
+            // asking the user to play call ringtone
+            io.to(`user:${to}`).emit("audio:play", {
+                track: "call-invite"
+            });
         });
 
         // invited people joining the call room

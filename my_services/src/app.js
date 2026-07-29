@@ -12,6 +12,7 @@ import { requireApiKey } from './middlewares/requireApiKey.js';
 import { blockBots } from './middlewares/blockBots.js';
 import runtimeRouter from './routes/runtimeRoute.js';
 import APIConfig from './routes/APIConfig_Route.js';
+import audioRouter from './routes/AudioRoute.js';
 
 const app=express();
 
@@ -39,7 +40,7 @@ app.use(apiLimiter);
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
-// Printing the route and method server is recieving
+// Printing the route and method server is receiving
 app.use((req,res,next)=>{
     console.log(`REQUEST: [${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
@@ -52,7 +53,7 @@ app.get('/health',(req,res)=>{
 app.use('/api',APIRouter)
 app.use('/api/auth',AuthRoute)
 app.use('/api/users',UserRoute)
-
+app.use('/api/audio',audioRouter)
 app.use('/config',APIConfig)
 app.use('/runtime',runtimeRouter)
 

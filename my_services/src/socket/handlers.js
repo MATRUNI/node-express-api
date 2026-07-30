@@ -37,7 +37,7 @@ export default function registerSocketHandler(io)
             const call = calls.get(callId)
             if(!call) return;
 
-            io.to(`user:${to}`).emit("call:invite",{
+            io.to(`user:${to}`).emit("call:invited",{
                 from:username,
                 callId
             })
@@ -80,6 +80,11 @@ export default function registerSocketHandler(io)
         // Find a network path so two peers can communicate directly.
         socket.on("ice",({to,candidate})=>{
             socket.to(`user:${to}`).emit("ice",{from:username,candidate})
+        })
+
+        // reject call
+        socket.on("call:reject",({callerId})=>{
+            socket.to(`user:${callerId}`).emit("call:rejected",{rejectedBy:username})
         })
 
         // user leaves a call

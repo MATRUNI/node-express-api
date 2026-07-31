@@ -161,7 +161,5 @@ function getOnlineUsers(io) {
 }
 function broadcastPresence(io) {
     const users = getOnlineUsers(io);
-
     io.emit("users:online", users);
-    io.emit("members", users.length);
 }

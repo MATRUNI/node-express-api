@@ -150,6 +150,11 @@ export default function registerSocketHandler(io)
                 ]
             });
         });
+
+        socket.on("ping",(cb)=>{
+            cb()
+        })
+
         socket.on("disconnect",()=>{
             broadcastPresence(io);
         })

@@ -3,11 +3,12 @@ export default function registerSocketHandler(io)
 {
     const calls = new Map();
     io.on("connection",(socket)=>{
-        const username = socket.user.username
+        const {username,userId} = socket.user
 
         // user's room
-        socket.join(`user:${username}`);
-
+        socket.data.userId = userId;
+        socket.data.username = username;
+        socket.join(`user:${userId}`);
         // updating UI with latest people only
         broadcastPresence(io)
 
@@ -21,8 +22,8 @@ export default function registerSocketHandler(io)
             const callId = crypto.randomUUID();
 
             calls.set(callId, {
-                host:username,
-                participants:new Set([username])
+                host:userId,
+                participants:new Set([userId])
             });
 
             socket.join(`call:${callId}`);
@@ -38,7 +39,7 @@ export default function registerSocketHandler(io)
             if(!call) return;
 
             io.to(`user:${to}`).emit("call:invited",{
-                from:username,
+                from:userId,
                 callId
             })
             // asking the user to play call ringtone
@@ -54,7 +55,7 @@ export default function registerSocketHandler(io)
 
             const existingUsers = [...call.participants];
 
-            call.participants.add(username);
+            call.participants.add(userId);
             socket.join(`call:${callId}`);
 
             socket.data.callId = callId;
@@ -68,23 +69,23 @@ export default function registerSocketHandler(io)
 
         // making offer
         socket.on("offer",({to,offer})=>{
-            socket.to(`user:${to}`).emit("offer",{from:username,offer})
+            socket.to(`user:${to}`).emit("offer",{from:userId,offer})
         })
 
         // answer to the offer
         socket.on('answer',({to,answer})=>{
-            socket.to(`user:${to}`).emit("answer",{from:username,answer})
+            socket.to(`user:${to}`).emit("answer",{from:userId,answer})
         })
 
         // ICE: Interactive Connectivity Establishment.
         // Find a network path so two peers can communicate directly.
         socket.on("ice",({to,candidate})=>{
-            socket.to(`user:${to}`).emit("ice",{from:username,candidate})
+            socket.to(`user:${to}`).emit("ice",{from:userId,candidate})
         })
 
         // reject call
         socket.on("call:reject",({callerId})=>{
-            socket.to(`user:${callerId}`).emit("call:rejected",{rejectedBy:username})
+            socket.to(`user:${callerId}`).emit("call:rejected",{rejectedBy:userId})
         })
 
         // user leaves a call
@@ -94,9 +95,9 @@ export default function registerSocketHandler(io)
         
             if (!call) return;
             
-            call.participants.delete(username);
+            call.participants.delete(userId);
 
-            if(call.host === username){
+            if(call.host === userId){
                 call.host = [...call.participants][0] || null;
             }
 
@@ -104,7 +105,7 @@ export default function registerSocketHandler(io)
             socket.data.callId = null;
 
             io.to(`call:${callId}`).emit("peer:left", {
-                peer: username,
+                peer: userId,
                 reason:"left"
             });
 
@@ -124,7 +125,7 @@ export default function registerSocketHandler(io)
 
             if (!call) return;
 
-            if (call.host !== username)
+            if (call.host !== userId)
             return;
 
             if(!call.participants.has(peer))
@@ -137,6 +138,10 @@ export default function registerSocketHandler(io)
             kickedSockets?.forEach(socketId => {
                 const kicked = io.sockets.sockets.get(socketId)
                 kicked?.leave(`call:${callId}`);
+                kicked?.emit("call:kicked", {
+                    callId
+                });
+                kicked.data.callId = null;
             });
 
             io.to(`call:${callId}`).emit("peer:left", {
@@ -161,10 +166,22 @@ export default function registerSocketHandler(io)
     })
 }
 function getOnlineUsers(io) {
-    return [...io.sockets.adapter.rooms.keys()]
-        .filter(room => room.startsWith("user:")).map(room => room.substring(5));;
+    const users = new Map();
+
+    for (const socket of io.sockets.sockets.values()) {
+        const { userId, username } = socket.data;
+
+        if (userId) {
+            users.set(userId, {
+                userId,
+                username
+            });
+        }
+    }
+
+    return [...users.values()];
 }
+
 function broadcastPresence(io) {
-    const users = getOnlineUsers(io);
-    io.emit("users:online", users);
+    io.emit("users:online", getOnlineUsers(io));
 }

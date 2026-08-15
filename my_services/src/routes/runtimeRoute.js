@@ -1,7 +1,7 @@
 import express from 'express'
 import productRouter from './productRoutes.js';
 import rateLimit from 'express-rate-limit';
-import API_Token_Verify from '../middlewares/API_Token_Verify.js';
+import verifyToken from '../middlewares/verifyToken.js';
 import runtimeCounter from '../middlewares/runtimeCounter.js';
 
 const runtimeLimiter = rateLimit({
@@ -11,7 +11,7 @@ const runtimeLimiter = rateLimit({
 });
 
 let runtimeRouter=express.Router();
-runtimeRouter.use(API_Token_Verify)
+runtimeRouter.use(verifyToken)
 runtimeRouter.use(runtimeCounter)
 runtimeRouter.use('/products',runtimeLimiter,productRouter);
 

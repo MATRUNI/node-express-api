@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
   url = env("NEON_DB")
 }
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -19,18 +20,38 @@ model User {
   stats Json @default("{}")
 
   lastLogin DateTime?
-  createdAt DateTime @default(now())
-  sharedData SharedData?
+  createdAt DateTime  @default(now())
+
+  sharedDataOwned    SharedData[]
+  sharedDataReceived SharedDataRecipient[]
 }
 
 model SharedData {
-  ownerId   String   @id
-  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
 
-  sharedTo  String?
-  data      Bytes
-  version   Int      @default(1)
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  data    String
+  version Int   @default(1)
+
+  expiresAt DateTime
+  
+  recipients SharedDataRecipient[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([expiresAt])
+}
+
+model SharedDataRecipient {
+  sharedDataId String
+  userId       String
+
+  sharedData SharedData @relation(fields: [sharedDataId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sharedDataId, userId])
+  @@index([userId])
 }

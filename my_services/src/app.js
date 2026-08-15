@@ -13,6 +13,7 @@ import { blockBots } from './middlewares/blockBots.js';
 import runtimeRouter from './routes/runtimeRoute.js';
 import APIConfig from './routes/APIConfig_Route.js';
 import audioRouter from './routes/AudioRoute.js';
+import sharingRoute from './routes/SharingAndNotification.js';
 
 const app=express();
 
@@ -37,7 +38,13 @@ const apiLimiter = rateLimit({
 });
 app.use(apiLimiter);
 
-app.use(express.json({ limit: '10kb' }));
+app.use((req, res, next) => {
+    if (req.originalUrl.startsWith('/api/share')) {
+        express.json({ limit: '100kb' })(req, res, next);
+    } else {
+        express.json({ limit: '10kb' })(req, res, next);
+    }
+});
 app.use(cookieParser());
 
 // Printing the route and method server is receiving
@@ -54,6 +61,7 @@ app.use('/api',APIRouter)
 app.use('/api/auth',AuthRoute)
 app.use('/api/users',UserRoute)
 app.use('/api/audio',audioRouter)
+app.use('/api/share',sharingRoute)
 app.use('/config',APIConfig)
 app.use('/runtime',runtimeRouter)
 

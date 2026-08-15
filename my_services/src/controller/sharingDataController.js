@@ -1,0 +1,57 @@
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { putSharedData,
+    getSharedDataUser,
+    consumeData
+ } from "../services/shareing.js";
+import { z } from "zod";
+
+const ApiConfigSchema = z.object({
+  url: z.url(),
+  method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
+
+  headers: z.record(z.string(), z.string()).default({}),
+
+  query: z.record(z.string(), z.string()).default({}),
+
+  path: z.record(z.string(), z.string()).default({}),
+
+  body: z.unknown().optional(),
+}).strip();
+export const shareData = asyncHandler(async(req,res)=>{
+    const { recievers, config } = req.body;
+    const {userId} = req.user
+    const sanitizedData = ApiConfigSchema.safeParse(config);
+    if (!sanitizedData.success) {
+        return res.status(400).json({ error: "Invalid configuration format", details: sanitizedData.error.errors });
+    }
+    
+    if (!Array.isArray(recievers) || recievers.length === 0) {
+        return res.status(400).json({ error: "At least one receiver is required" });
+    }
+
+    const response = await putSharedData({data:sanitizedData.data,sender:userId,recievers})
+    
+    if (!response.success) {
+        return res.status(500).json(response);
+    }
+    
+    res.json(response)
+})
+
+export const getSharedDataCount = asyncHandler(async(req,res)=>{
+    const {userId} = req.user;
+    const count = await getSharedDataUser(userId);
+    res.json({ count });
+})
+
+export const consumeSharedConfig = asyncHandler(async(req,res)=>{
+    const {userId} = req.user;
+    const {sharedDataId} = req.params;
+    
+    if(!sharedDataId) {
+        return res.status(400).json({ error: "Shared Data ID is required" });
+    }
+
+    const response = await consumeData({userId, sharedDataId});
+    res.json(response);
+})

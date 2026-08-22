@@ -5,12 +5,13 @@ import { createSharedData,
         consumeSharedData, 
         getSharedData} from "../repositories/sharedData.js";
 import { sendNotification } from "../socket/notificationHandler.js";
+import { getCachedUsername } from '../cache/usernameCache.js'
+import { findUsernamePrefix } from "../utils/fincUsernamePrefix.js";
 
 export async function putSharedData({data,sender,recievers}) 
 {
     try 
     {
-        // const configData = JSON.parse(data)
         const configData = data
         
         const {timeStamp: encryptTimestamp,signature: encryptSignature} = hmac(configData, "encrypt");
@@ -116,4 +117,9 @@ export async function consumeData({userId,sharedDataId})
     await consumeSharedData(userId,sharedDataId)
 
     return decryptResult
+}
+
+export async function getUsernamesWithPrefix({pre}) 
+{
+    return findUsernamePrefix(await getCachedUsername(),pre)
 }

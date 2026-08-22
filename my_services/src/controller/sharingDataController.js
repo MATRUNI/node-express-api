@@ -1,7 +1,8 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { putSharedData,
     getSharedDataUser,
-    consumeData
+    consumeData,
+    getUsernamesWithPrefix
  } from "../services/shareing.js";
 import { z } from "zod";
 
@@ -54,4 +55,15 @@ export const consumeSharedConfig = asyncHandler(async(req,res)=>{
 
     const response = await consumeData({userId, sharedDataId});
     res.json(response);
+})
+
+export const searchUsernames = asyncHandler(async(req,res)=>{
+    const { value } = req.params
+    if(!(value.length>=2))
+    {
+        return res.status(400).json({error: "Search value must be at least 3 characters long"})
+    }
+    const usernames = await getUsernamesWithPrefix({pre:value});
+    
+    return res.status(200).json({usernames})
 })

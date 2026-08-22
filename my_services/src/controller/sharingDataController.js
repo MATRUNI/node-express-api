@@ -65,5 +65,5 @@ export const searchUsernames = asyncHandler(async(req,res)=>{
     }
     const usernames = await getUsernamesWithPrefix({pre:value});
     
-    return res.status(200).json({usernames})
+    return res.status(200).json(usernames)
 })

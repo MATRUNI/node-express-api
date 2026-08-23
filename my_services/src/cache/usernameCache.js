@@ -8,10 +8,13 @@ export async function getCachedUsername(forcedRefresh = false)
 
     cacheUsername = (await prisma.user.findMany({
         select:{
+            id:true,
             username:true
+        },
+        orderBy:{
+            username:"asc"
         }
-    })).map(user=>user.username)
-    .sort((a, b) => a.localeCompare(b));
+    }))
     console.log("Cache Refreshed!")
     return cacheUsername;
 }

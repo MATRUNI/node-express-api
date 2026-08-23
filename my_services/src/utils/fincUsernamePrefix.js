@@ -1,37 +1,37 @@
-function compareStrings(a, b) {
-    return a.localeCompare(b,undefined,{
-        sensitivity:"base"
-    });
-}
+export function findUsernamePrefix(users, prefix) {
+  const normalizedPrefix = prefix.trim().toLowerCase();
 
-export function findUsernamePrefix(usernames, prefix) {
-    const normalizedPrefix = prefix.toLowerCase();
+  if (!normalizedPrefix) {
+    return [];
+  }
 
-    let left = 0;
-    let right = usernames.length;
+  let left = 0;
+  let right = users.length;
 
-    while (left < right) {
-        const middle = Math.floor((left + right) / 2);
-        const username = usernames[middle].toLowerCase();
+  while (left < right) {
+    const middle = Math.floor((left + right) / 2);
 
-        if (compareStrings(usernames[middle], prefix) < 0) {
-            left = middle + 1;
-        } else {
-            right = middle;
-        }
+    if (
+      users[middle].username.toLowerCase() < normalizedPrefix
+    ) {
+      left = middle + 1;
+    } else {
+      right = middle;
+    }
+  }
+
+  const matches = [];
+
+  for (let i = left; i < users.length; i++) {
+    const username = users[i].username;
+
+    if (!username.toLowerCase().startsWith(normalizedPrefix)) {
+      break;
     }
 
-    const matches = [];
+    matches.push(users[i]);
+  }
 
-    for (let i = left; i < usernames.length; i++) {
-        const username = usernames[i];
-
-        if (!username.toLowerCase().startsWith(normalizedPrefix)) {
-            break;
-        }
-
-        matches.push(username);
-    }
-
-    return matches;
+  return matches;
 }
+

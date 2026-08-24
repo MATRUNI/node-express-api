@@ -1,5 +1,5 @@
 import express from "express";
-import { shareData, getSharedDataCount, consumeSharedConfig, searchUsernames } from "../controller/sharingDataController.js";
+import { shareData, getSharedDataRecipients, consumeSharedConfig, searchUsernames } from "../controller/sharingDataController.js";
 import verifyToken from "../middlewares/verifyToken.js"
 import rateLimit from "express-rate-limit"
 
@@ -21,8 +21,9 @@ const shareUserInfoLimiter = rateLimit({
     },
     message:"Too many requests."
 })
-sharingRoute.post("/config", sharingRateLimiter, shareData)
-sharingRoute.get("/count", getSharedDataCount)
-sharingRoute.post("/consume/:sharedDataId", consumeSharedConfig)
+// not ready yet
+// sharingRoute.post("/config", sharingRateLimiter, shareData)
+// sharingRoute.get("/recipients", getSharedDataRecipients)
+// sharingRoute.post("/consume/:sharedDataId", consumeSharedConfig)
 sharingRoute.get("/users/search/:value",shareUserInfoLimiter, searchUsernames)
 export default sharingRoute;

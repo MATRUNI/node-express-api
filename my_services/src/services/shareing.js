@@ -1,14 +1,14 @@
 import hmac from "../utils/hmac.js";
 import AppErrors from "../utils/AppErrors.js";
 import { createSharedData, 
-        getPendingSharedDataCount, 
+        getSharedDataRecipientNames, 
         consumeSharedData, 
         getSharedData} from "../repositories/sharedData.js";
 import { sendNotification } from "../socket/notificationHandler.js";
 import { getCachedUsername } from '../cache/usernameCache.js'
 import { findUsernamePrefix } from "../utils/fincUsernamePrefix.js";
 
-export async function putSharedData({data,sender,recievers}) 
+export async function putSharedData({data,sender,recievers, message}) 
 {
     try 
     {
@@ -16,7 +16,7 @@ export async function putSharedData({data,sender,recievers})
         
         const {timeStamp: encryptTimestamp,signature: encryptSignature} = hmac(configData, "encrypt");
 
-        const encryptResponse = await fetch(
+        const encryptPromise = fetch(
             process.env.COMPRESS_SERVER,
             {
                 method: "POST",
@@ -31,6 +31,16 @@ export async function putSharedData({data,sender,recievers})
             }
         );
 
+        const usernamePromise = prisma.user.findUnique({
+          where: { id: sender },
+          select: { username: true }
+        });
+
+        const [encryptResponse, senderUser] = await Promise.all([
+          encryptPromise,
+          usernamePromise
+        ]);
+        
         if (!encryptResponse.ok) {
           throw new Error(
             `Encryption server returned ${encryptResponse.status}`
@@ -46,13 +56,18 @@ export async function putSharedData({data,sender,recievers})
         }
         const encryptedData = encryptResult.encrypted;
 
-        const sharedData = await createSharedData(encryptedData, sender, recievers)
+        const sharedData = await createSharedData(encryptedData, sender, recievers,message)
 
-        sendNotification({
-            receiverIds: recievers, 
-            event: "share:received", 
-            payload: { from: sender, id: sharedData.id }
-        }).catch(err => console.error("Notification error:", err));
+        try {
+            sendNotification({
+                receiverIds: recievers, 
+                event: "share:received", 
+                payload: { from: senderUser.username, senderId:sender ,sharedDataId: sharedData.id,message }
+            })
+        }
+        catch(err){
+            console.error("Notification error:", err)
+        };
         return {success:true,message:"Config shared!"}
     } 
     catch (error) 
@@ -65,7 +80,7 @@ export async function putSharedData({data,sender,recievers})
 
 export async function getSharedDataUser(userId) 
 {
-    return await getPendingSharedDataCount(userId)
+    return await getSharedDataRecipientNames(userId)
 }
 
 export async function consumeData({userId,sharedDataId}) 

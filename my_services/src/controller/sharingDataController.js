@@ -19,7 +19,7 @@ const ApiConfigSchema = z.object({
   body: z.unknown().optional(),
 }).strip();
 export const shareData = asyncHandler(async(req,res)=>{
-    const { recievers, config } = req.body;
+    const { recievers, config, message } = req.body;
     const {userId} = req.user
     const sanitizedData = ApiConfigSchema.safeParse(config);
     if (!sanitizedData.success) {
@@ -30,7 +30,7 @@ export const shareData = asyncHandler(async(req,res)=>{
         return res.status(400).json({ error: "At least one receiver is required" });
     }
 
-    const response = await putSharedData({data:sanitizedData.data,sender:userId,recievers})
+    const response = await putSharedData({data:sanitizedData.data,sender:userId,recievers,message})
     
     if (!response.success) {
         return res.status(500).json(response);
@@ -39,10 +39,10 @@ export const shareData = asyncHandler(async(req,res)=>{
     res.json(response)
 })
 
-export const getSharedDataCount = asyncHandler(async(req,res)=>{
+export const getSharedDataRecipients = asyncHandler(async(req,res)=>{
     const {userId} = req.user;
-    const count = await getSharedDataUser(userId);
-    res.json({ count });
+    const usernames = await getSharedDataUser(userId);
+    res.json({ usernames });
 })
 
 export const consumeSharedConfig = asyncHandler(async(req,res)=>{

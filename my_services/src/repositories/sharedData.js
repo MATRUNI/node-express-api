@@ -1,6 +1,7 @@
 import prisma from "../lib/prisma.js";
 
-export async function createSharedData(encryptedData,sender,recievers) 
+// creating the data in tables
+export async function createSharedData(encryptedData,sender,recievers, message) 
 {
     try 
     {
@@ -8,6 +9,7 @@ export async function createSharedData(encryptedData,sender,recievers)
           data: {
             ownerId: sender,
             data: encryptedData,
+            message,
             expiresAt:new Date(Date.now() + 60 * 60 * 1000),
             recipients:{
               create:recievers.map(userId=>({userId}))
@@ -25,37 +27,84 @@ export async function createSharedData(encryptedData,sender,recievers)
     }
 }
 
-export async function getPendingSharedDataCount(userId) {
-    return await prisma.sharedDataRecipient.count({
-        where: {
-                userId,
-                sharedData: {
-                    expiresAt: {
-                    gt: new Date()
-                }
+// for data creator, to know how recipients are remaining to cosume the data
+export async function getSharedDataRecipientNames(sharedDataId) {
+  const sharedData = await prisma.sharedData.findUnique({
+    where: {
+      id: sharedDataId
+    },
+    select: {
+      recipients: {
+        select: {
+          user: {
+            select: {
+              username: true
             }
+          }
         }
-    });
+      }
+    }
+  });
+
+  if (!sharedData) {
+    throw new Error("Shared data not found");
+  }
+
+  return sharedData.recipients.map(
+    recipient => recipient.user.username
+  );
 }
 
+// for recipients to get the usename of data creator
+export async function getSharedDataOwner(sharedDataId,recipientUserId) 
+{
+  const sharedData = await prisma.sharedData.findFirst({
+    where: {
+      id: sharedDataId,
+      recipients: {
+        some: {
+          userId: recipientUserId
+        }
+      }
+    },
+    select: {
+      owner: {
+        select: {
+          id: true,
+          username: true
+        }
+      }
+    }
+  });
+
+  if (!sharedData) {
+    throw new Error("Shared data not found or access denied");
+  }
+
+  return sharedData.owner;
+}
+
+// get actual shared data
 export async function getSharedData(userId,sharedDataId) 
 {
-    return await prisma.sharedDataRecipient.findFirst({
+    return await prisma.sharedDataRecipient.findUnique({
         where:{
-            sharedDataId,
-            userId,
+            sharedDataId_userId:{
+                sharedDataId,
+                userId,
+            },
+        },
+        select:{
             sharedData:{
-                expiresAt:{
-                    gt:new Date()
+                select:{
+                    data:true
                 }
             }
-        },
-        include:{
-            sharedData:true
         }
     })    
 }
 
+// consume/ delete the user from recipient list and none left delete the shared data too
 export async function consumeSharedData(userId, sharedDataId) {
     return await prisma.$transaction(async (tx) => {
         let result;
@@ -91,4 +140,26 @@ export async function consumeSharedData(userId, sharedDataId) {
             deleted: remaining === 0
         };
     });
+}
+
+export async function gotAnySharedData(userId) 
+{
+    return await prisma.sharedDataRecipient.findMany({
+      where:{
+        userId
+      },
+      include:{
+        sharedData:{
+          select:{
+            owner:{
+              select:{
+                username:true,
+                id:true
+              }
+            },
+            message:true
+          }
+        }
+      }
+    })
 }

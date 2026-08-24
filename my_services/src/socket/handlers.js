@@ -1,8 +1,9 @@
+import { gotAnySharedData } from "../repositories/sharedData.js";
 
 export default function registerSocketHandler(io)
 {
     const calls = new Map();
-    io.on("connection",(socket)=>{
+    io.on("connection",async(socket)=>{
         const {username,userId} = socket.user
 
         // user's room
@@ -11,6 +12,12 @@ export default function registerSocketHandler(io)
         socket.join(`user:${userId}`);
         // updating UI with latest people only
         broadcastPresence(io)
+        const notifications = await gotAnySharedData(userId);
+        notifications.forEach((notification) => {
+            const {sharedDataId,sharedData} = notification
+            const {username, id} = sharedData.owner 
+            socket.emit("share:received",{from:username, senderId:id,sharedDataId,message:sharedData.message})
+        });
 
         // listens to chat:send from users and broadCast to others
         socket.on("chat:send",(data)=>{

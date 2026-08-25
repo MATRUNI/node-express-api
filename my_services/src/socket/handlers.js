@@ -12,12 +12,8 @@ export default function registerSocketHandler(io)
         socket.join(`user:${userId}`);
         // updating UI with latest people only
         broadcastPresence(io)
-        const notifications = await gotAnySharedData(userId);
-        notifications.forEach((notification) => {
-            const {sharedDataId,sharedData} = notification
-            const {username, id} = sharedData.owner 
-            socket.emit("share:received",{from:username, senderId:id,sharedDataId,message:sharedData.message})
-        });
+        // Listeners must be registered synchronously before any async operations!
+
 
         // listens to chat:send from users and broadCast to others
         socket.on("chat:send",(data)=>{
@@ -170,6 +166,18 @@ export default function registerSocketHandler(io)
         socket.on("disconnect",()=>{
             broadcastPresence(io);
         })
+
+        // Fetch shared data asynchronously after listeners are attached
+        try {
+            const notifications = await gotAnySharedData(userId);
+            notifications.forEach((notification) => {
+                const {sharedDataId,sharedData} = notification
+                const {username, id} = sharedData.owner 
+                socket.emit("share:received",{from:username, senderId:id,sharedDataId,message:sharedData.message})
+            });
+        } catch (error) {
+            console.error("Error fetching shared data on connection:", error);
+        }
     })
 }
 function getOnlineUsers(io) {

@@ -7,6 +7,7 @@ import { createSharedData,
 import { sendNotification } from "../socket/notificationHandler.js";
 import { getCachedUsername } from '../cache/usernameCache.js'
 import { findUsernamePrefix } from "../utils/fincUsernamePrefix.js";
+import prisma from "../lib/prisma.js";
 
 export async function putSharedData({data,sender,recievers, message}) 
 {

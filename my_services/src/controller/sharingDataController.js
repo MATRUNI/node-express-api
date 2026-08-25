@@ -10,9 +10,9 @@ const ApiConfigSchema = z.object({
   url: z.url(),
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
 
-  headers: z.record(z.string(), z.string()).default({}),
+  headers: z.array(z.object({key:z.string(), value:z.string()})).default([]),
 
-  query: z.record(z.string(), z.string()).default({}),
+  query: z.array(z.object({key:z.string(), value:z.string()})).default([]),
 
   path: z.record(z.string(), z.string()).default({}),
 

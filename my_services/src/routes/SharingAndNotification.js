@@ -22,7 +22,7 @@ const shareUserInfoLimiter = rateLimit({
     message:"Too many requests."
 })
 sharingRoute.post("/config", sharingRateLimiter, shareData)
-sharingRoute.get("/recipients", getSharedDataRecipients)
+sharingRoute.get("/recipients/:sharedDataId", getSharedDataRecipients)
 sharingRoute.get("/consume/:sharedDataId", consumeSharedConfig)
 sharingRoute.get("/users/search/:value",shareUserInfoLimiter, searchUsernames)
 export default sharingRoute;

@@ -40,9 +40,9 @@ export const shareData = asyncHandler(async(req,res)=>{
 })
 
 export const getSharedDataRecipients = asyncHandler(async(req,res)=>{
-    const {userId} = req.user;
-    const usernames = await getSharedDataUser(userId);
-    res.json({ usernames });
+    const {sharedDataId} = req.params;
+    const usernames = await getSharedDataUser(sharedDataId);
+    return res.json( usernames );
 })
 
 export const consumeSharedConfig = asyncHandler(async(req,res)=>{
@@ -54,7 +54,7 @@ export const consumeSharedConfig = asyncHandler(async(req,res)=>{
     }
 
     const response = await consumeData({userId, sharedDataId});
-    res.json(response);
+    return res.json(response);
 })
 
 export const searchUsernames = asyncHandler(async(req,res)=>{

@@ -79,9 +79,9 @@ export async function putSharedData({data,sender,recievers, message})
 }
 
 
-export async function getSharedDataUser(userId) 
+export async function getSharedDataUser(sharedDataId) 
 {
-    return await getSharedDataRecipientNames(userId)
+    return await getSharedDataRecipientNames(sharedDataId)
 }
 
 export async function consumeData({userId,sharedDataId}) 

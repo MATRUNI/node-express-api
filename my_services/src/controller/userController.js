@@ -4,14 +4,22 @@ export async function getMe(req, res) {
     try {
         const { userId } = req.user;
         const user = await prisma.user.findUnique({
-            where: { id: userId }
+            where: { id: userId },
+            include:{
+                sharedDataOwned:{
+                    select:{
+                        id:true
+                    }
+                }
+            }
         });
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         return res.json({
-            username: user.username
+            username: user.username,
+            sharedDataId: user.sharedDataOwned[0].id
         });
     } catch (error) {
         return res.status(500).json({ message: "Invalid session" });

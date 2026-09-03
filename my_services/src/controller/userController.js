@@ -19,7 +19,7 @@ export async function getMe(req, res) {
         }
         return res.json({
             username: user.username,
-            sharedDataId: user.sharedDataOwned[0].id
+            sharedDataId: user.sharedDataOwned[0]?.id ?? null
         });
     } catch (error) {
         return res.status(500).json({ message: "Invalid session" });

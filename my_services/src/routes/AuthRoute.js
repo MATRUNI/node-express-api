@@ -1,11 +1,13 @@
 import express from 'express'
 import { register } from '../controller/registerUser.js';
 import { loginUser } from '../controller/loginUser.js';
-import { logoutSession, refreshSession } from '../controller/authController.js';
+import { completeOnboarding, googleCallbackController, logoutSession, refreshSession } from '../controller/authController.js';
 import { optController, otpVerify } from '../controller/otpController.js';
 // import { verifyHuman } from '../middlewares/verifyHuman.js';
 import rateLimit from 'express-rate-limit';
 import {verifySessionToken} from '../middlewares/verifySessionToken.js';
+import passport from 'passport'
+import { handleGoogleCallback } from '../middlewares/googleAuthMiddleware.js';
 
 const authRouterLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
@@ -21,6 +23,9 @@ const authLimiter = rateLimit({
 const router=express.Router();
 router.use(authRouterLimiter)
 
+router.get('/google',passport.authenticate('google',{scope:["profile","email"]}));
+router.get('/google/callback', handleGoogleCallback, googleCallbackController);
+router.post('/onboarding', authLimiter, verifySessionToken(true),completeOnboarding)
 router.post('/register', authLimiter,verifySessionToken(true), register)
 router.post('/login', authLimiter, loginUser)
 router.post('/refresh',refreshSession)

@@ -14,13 +14,15 @@ import runtimeRouter from './routes/runtimeRoute.js';
 import APIConfig from './routes/APIConfig_Route.js';
 import audioRouter from './routes/AudioRoute.js';
 import sharingRoute from './routes/SharingAndNotification.js';
+import passport from "passport"
+import './config/passport.js'
 
 const app=express();
 
 app.set('trust proxy', 1);
 
 app.use(cors({
-    origin: process.env.FRONTEND_URLS||"http://localhost:5173",
+    origin: process.env.FRONTEND_URL||"http://localhost:5173",
     methods: ["GET", "POST", "PUT", "PATCH" ,"DELETE", "OPTIONS"],
     credentials:true
 }));
@@ -46,6 +48,7 @@ app.use((req, res, next) => {
     }
 });
 app.use(cookieParser());
+app.use(passport.initialize())
 
 // Printing the route and method server is receiving
 app.use((req,res,next)=>{

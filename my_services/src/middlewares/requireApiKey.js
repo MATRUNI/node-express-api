@@ -1,6 +1,6 @@
 export function requireApiKey(req, res, next) {
     // Exclude health check from API key requirement so waking the cold server doesn't fail
-    if (req.path === '/health') {
+    if (req.path === '/health' || req.path.startsWith("/api/auth/google")) {
         return next();
     }
 

@@ -27,10 +27,7 @@ app.use(cors({
     credentials:true
 }));
 
-app.use(helmet({
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-    crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
+app.use(helmet());
 
 // Apply Bot Blocker and API Key requirement early in the stack
 app.use(blockBots);

@@ -60,26 +60,68 @@ export async function logoutSession(req, res) {
     return res.status(200).json({ message: "SESSION_TERMINATED: GOODBYE_OPERATOR" });
 }
 
+const frontendUrl = () => process.env.FRONTEND_URL || "http://localhost:5173";
+
+function issueGoogleExchangeToken(userId) {
+    return jwt.sign(
+        { userId, purpose: "google_oauth_exchange" },
+        process.env.SECRET_KEY,
+        { expiresIn: "2m" }
+    );
+}
+
 export const googleCallbackController = async (req, res) => {
     try {
-        const user = req.user; 
-
+        const user = req.user;
         if (!user) {
-            return res.redirect(`${process.env.FRONTEND_URL}/login?error=auth_failed`);
-        }
-        if (!user.username) {
-            genSignUpSessionToken({userId:user.id, isVerified:true}, res)
-            return res.redirect(`${process.env.FRONTEND_URL}/onboarding`);
+            return res.redirect(`${frontendUrl()}/auth?error=auth_failed`);
         }
 
-        genAccessToken({userId:user.id,username:user.username},res);
-        await genRefreshToken({userId: user.id,username:user.username}, res);
-
-        return res.redirect(`${process.env.FRONTEND_URL}`);
-
+        const token = issueGoogleExchangeToken(user.id);
+        return res.redirect(`${frontendUrl()}/auth?oauth_token=${encodeURIComponent(token)}`);
     } catch (error) {
         console.error("Google Auth Callback Error:", error);
-        return res.redirect(`${process.env.FRONTEND_URL}/login?error=server_error`);
+        return res.redirect(`${frontendUrl()}/auth?error=server_error`);
+    }
+};
+
+export const googleExchangeController = async (req, res) => {
+    try {
+        const token = req.body?.token;
+        if (!token) {
+            return res.status(400).json({ error: "AUTH_ERROR: EXCHANGE_TOKEN_MISSING" });
+        }
+
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        if (decoded.purpose !== "google_oauth_exchange" || !decoded.userId) {
+            return res.status(403).json({ error: "AUTH_ERROR: INVALID_EXCHANGE_TOKEN" });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.userId }
+        });
+        if (!user) {
+            return res.status(404).json({ error: "AUTH_ERROR: USER_NOT_FOUND" });
+        }
+
+        if (!user.username) {
+            genSignUpSessionToken({ userId: user.id, isVerified: true }, res);
+            return res.status(200).json({
+                message: "ONBOARDING_REQUIRED",
+                needsOnboarding: true
+            });
+        }
+
+        genAccessToken({ userId: user.id, username: user.username }, res);
+        await genRefreshToken({ userId: user.id, username: user.username }, res);
+        return res.status(200).json({
+            message: "LOGIN_SUCCESSFUL",
+            needsOnboarding: false,
+            user: { username: user.username }
+        });
+    } catch (error) {
+        console.error("Google Auth Exchange Error:", error);
+        return res.status(403).json({ error: "AUTH_ERROR: EXCHANGE_TOKEN_EXPIRED_OR_INVALID" });
     }
 };
 
@@ -102,7 +144,7 @@ export const completeOnboarding = async (req, res) => {
             data: { username }
         });
 
-        res.clearCookie('session_token');
+        res.clearCookie('session_token', getCookieOptions());
 
         genAccessToken({ userId: updatedUser.id, username: updatedUser.username }, res);
         await genRefreshToken({ userId: updatedUser.id, username: updatedUser.username }, res);

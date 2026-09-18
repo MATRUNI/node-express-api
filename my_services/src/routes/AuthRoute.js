@@ -1,7 +1,7 @@
 import express from 'express'
 import { register } from '../controller/registerUser.js';
 import { loginUser } from '../controller/loginUser.js';
-import { completeOnboarding, googleCallbackController, logoutSession, refreshSession } from '../controller/authController.js';
+import { completeOnboarding, googleCallbackController, googleExchangeController, logoutSession, refreshSession } from '../controller/authController.js';
 import { optController, otpVerify } from '../controller/otpController.js';
 // import { verifyHuman } from '../middlewares/verifyHuman.js';
 import rateLimit from 'express-rate-limit';
@@ -23,8 +23,9 @@ const authLimiter = rateLimit({
 const router=express.Router();
 router.use(authRouterLimiter)
 
-router.get('/google',passport.authenticate('google',{scope:["profile","email"]}));
+router.get('/google', passport.authenticate('google', { scope: ["profile", "email"], session: false }));
 router.get('/google/callback', handleGoogleCallback, googleCallbackController);
+router.post('/google/exchange', authLimiter, googleExchangeController);
 router.post('/onboarding', authLimiter, verifySessionToken(true),completeOnboarding)
 router.post('/register', authLimiter,verifySessionToken(true), register)
 router.post('/login', authLimiter, loginUser)

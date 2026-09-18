@@ -73,7 +73,7 @@ export const googleCallbackController = async (req, res) => {
         }
 
         genAccessToken({userId:user.id,username:user.username},res);
-        genRefreshToken({userId: user.id,username:user.username}, res);
+        await genRefreshToken({userId: user.id,username:user.username}, res);
 
         return res.redirect(`${process.env.FRONTEND_URL}`);
 
@@ -105,7 +105,7 @@ export const completeOnboarding = async (req, res) => {
         res.clearCookie('session_token');
 
         genAccessToken({ userId: updatedUser.id, username: updatedUser.username }, res);
-        genRefreshToken({ userId: updatedUser.id, username: updatedUser.username }, res);
+        await genRefreshToken({ userId: updatedUser.id, username: updatedUser.username }, res);
 
         return res.status(200).json({
             message: "ONBOARDING_COMPLETE",

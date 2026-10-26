@@ -1,12 +1,14 @@
 
 export function getRandomProduct(arr,count)
 {
-    let copy = [...arr];
+    const n = arr.length;
+    const k = Math.min(Math.max(0, Math.floor(count)), n);
 
-    for(let i = copy.length-1; i>0; i--)
-    {
-        let j = Math.floor(Math.random()*(i+1));
-        [copy[i], copy[j]] = [copy[j], copy[i]]
+    const selected = new Set();
+
+    while (selected.size < k) {
+        selected.add(Math.floor(Math.random() * n));
     }
-    return copy.slice(0,Math.min(count,copy.length));
+
+    return [...selected].map(index => arr[index]);
 }
